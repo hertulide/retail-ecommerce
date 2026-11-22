@@ -9,15 +9,16 @@ def load_data(path):
         print(f'Données chargées avec succès depuis {path}.')
         return df
     except FileNotFoundError:
-        print(f'Erreur : Le fichier {path} est introuvable. Attention: cela doit etre un fichier excel.')
-        return None 
+        raise FileNotFoundError(
+            f"Le fichier {path} est introuvable."
+        )
 
 
 def check_data(df):
     report = {
         "Nombre total de lignes": len(df),
         "Nombre de ligne sans CustomerID": int(df["CustomerID"].isna().sum()),
-        "Nombre de doublons exacts": int(df.duplicated(keep=False).sum()),
+        "Nombre de doublons": int(df.duplicated(keep=False).sum()),
         "Nombre de lignes avec quantité négative": int((df["Quantity"] < 0).sum())
     }
     return report
@@ -64,16 +65,16 @@ if __name__ == "__main__":
     df = load_data(path)
     df_classified = transactions_name(df)
     quality_report = check_data(df)
-    data_quality_report = fichier_report(quality_report, output_path)
+    fichier_report(quality_report, output_path)
 
     print(df_classified["transaction_type"].value_counts())
     print(df_classified.shape)
 
-df_autres = df_classified[
-    df_classified["transaction_type"] == "a_classifier"
-]
+    df_autres = df_classified[
+        df_classified["transaction_type"] == "a_classifier"]
+    
 
-print(f'Nombre de ligne a classifier avec un prix inferieur a zéros {(df_autres["UnitPrice"] < 0).sum()}.')
-print(f'Nombre de ligne a classifier avec un prix égale à zéros {(df_autres["UnitPrice"] == 0).sum()}.')
-print(f'Nombre de ligne a classifier avec une quantité négative {(df_autres["Quantity"] < 0).sum()}.')
+    print(f'Nombre de ligne a classifier avec un prix inferieur a zéros {(df_autres["UnitPrice"] < 0).sum()}.')
+    print(f'Nombre de ligne a classifier avec un prix égale à zéros {(df_autres["UnitPrice"] == 0).sum()}.')
+    print(f'Nombre de ligne a classifier avec une quantité négative {(df_autres["Quantity"] < 0).sum()}.')
 
