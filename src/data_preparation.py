@@ -6,9 +6,6 @@ data_path = ROOT / "data" / "raw" / "Online Retail.xlsx"
 
 
 
-df = load_data(data_path)
-df_classified = transactions_name(df)
-
 def prepare_sales(df_classified):
 # Sélectionner les ventes positives
     df_ventes = df_classified[
@@ -28,6 +25,9 @@ def sales_by_country(df_ventes):
 
 
 if __name__ == "__main__":
+    df = load_data(data_path)
+    df_classified = transactions_name(df)
+
     df_ventes = prepare_sales(df_classified)
 
     montant_max = df_ventes["total_price"].max()
@@ -48,21 +48,36 @@ if __name__ == "__main__":
     print("Nombre de lignes de ventes :", len(df_ventes))
     print("Montant minimum :", df_ventes["total_price"].min())
     print("Montant maximum :", df_ventes["total_price"].max())
+    
+    ca_par_pays = sales_by_country(df_ventes)
     print(ca_par_pays)
     print(ca_par_pays.sum())
 
+    
     nombre_commandes = df_ventes["InvoiceNo"].nunique()
-    print("Nombre de commandes :", nombre_commandes)
-
     panier_moyen = ca_total/nombre_commandes
     print("Panier moyens :", panier_moyen)
-
+    print("Nombre de commandes :", nombre_commandes)
+    
     nombre_commandes_pays = df_ventes.groupby("Country")["InvoiceNo"].nunique()
     print("Nombre de commandes par pays :", nombre_commandes_pays)
 
-    ca_par_pays = sales_by_country(df_ventes)
     panier_moyen_par_pays = ca_par_pays/nombre_commandes_pays
     print("Panier moyen par pays :", panier_moyen_par_pays)
+
+
+
+    df_produits = df_ventes[df_ventes["StockCode"] != "DOT"].copy()
+    nombre_de_produit = df_produits["StockCode"].nunique()
+    ca_par_produit = (df_produits.groupby("StockCode")["total_price"].sum().sort_values(ascending=False))
+    print("Nombre de références produits :", nombre_de_produit)
+    print("Top 5 des produits :")
+    print(ca_par_produit.head(5))
+
+    df_ventes["month"] = df_ventes["InvoiceDate"].dt.to_period("M")
+    ca_par_mois = df_ventes.groupby("month")["total_price"].sum()
+    print("Ca par mois :", ca_par_mois)
+
 
     
 
